@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<table id="rooms">
+    <tr>
+        <th>Název místnosti</th>
+        <th>Připojit</th>
+    </tr>
+</table>
+<script defer>
+    let rooms = "<%= rooms %>"
+    let table = document.querySelector("#rooms tbody")
+    rooms = rooms.split(",")
+    rooms.forEach(e => {
+        table.innerHTML += `<tr><td>${e}</td><td><a href="${window.location.href + "/" + e}">Připojit</a></td></tr>`
+    })
+</script>
+
+</html>
