@@ -57,9 +57,11 @@ io.on("connection",socket=>{
         socket.emit("password",room.pw)
 
         socket.on('disconnect', function () {
+            console.log("user disconnected")
             let index = rooms.findIndex(item => {
                 return item.id === room.id;
             });
+            rooms.splice(index,1)
         });
 
         socket.on("regeneratePw",()=>{
