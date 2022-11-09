@@ -9,10 +9,12 @@
     <script>
         let id = "<%= id %>"
     </script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js" defer></script>
+    <script src="/static/peerjs.min.js" defer></script>
+    <script src="/static/bootstrap/bootstrap.min.js" defer></script>
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="/static/host.js" defer></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" defer>
+    <link rel="stylesheet" href="/static/bootstrap/bootstrap.min.css" defer>
     <style>
         * {
             margin: 0;
@@ -66,6 +68,9 @@
             padding: 0 3px;
             user-select: none;
         }
+        .annon {
+            -webkit-text-security: disc;
+        }
 
         .pw {
             -webkit-appearance: none;
@@ -79,14 +84,38 @@
             font-weight: bold;
             font-family: Arial, Helvetica, sans-serif;
             color: rgb(222, 222, 222);
-            pointer-events: none;
+            cursor:pointer;
+            justify-content: center;
+        }
+
+        pw:focus {
+            outline: none;
+        }
+
+        .alert{
+            opacity: 1;
+            position: absolute;
+            bottom: 1em;
+            width: 25%;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            opacity:0;
+            transition: opacity .2s linear;
+            background: rgb(139, 139, 139);
+            color:rgb(222, 222, 222);
+            text-align:center;
+        }
+
+        .message, .link, .link:hover{
+            color:rgb(222, 222, 222);
         }
     </style>
 </head>
 
 <body>
     <div class="pw-container">
-        <input type="password" value="ABCD" class="pw">
+        <span type="text" class="annon pw"></span>
         <span class="icon material-icons-outlined" id="showhide">
             visibility
         </span>
@@ -95,11 +124,34 @@
         </span>
     </div>
     <div class="video-container"></div>
+    <div class="display-4 text-center message position-absolute top-50 start-50 translate-middle">Start streaming by accessing this url <a class="link" href="https://<%= domain %>/join/<%= id %>">https://<%= domain %>/join/<%= id %></a> </div>
+    <div class="alert alert-primary" style="display:none">Text byl zkopírován</div>
     <script>
         document.querySelector("#showhide").addEventListener("click", (e) => {
             let pw = document.querySelector(".pw")
-            pw.type === "password" ? pw.type = "text" : pw.type = "password"
+            pw.classList.toggle("annon")
         })
+
+        document.querySelector('.pw').addEventListener("click",(e)=>{
+            navigator.clipboard.writeText(e.target.innerHTML);
+            handleAlert("Text byl zkopírován do schránky");
+        })
+
+        function handleAlert(text){
+            let alert = document.querySelector('.alert')
+            
+            alert.innerHTML = text
+            alert.style.display="block"
+            setTimeout(()=>{
+                alert.style.opacity = 1
+                setTimeout(()=>{
+                    alert.style.opacity = 0;
+                    setTimeout(()=>{
+                        alert.style.display = "none";
+                    },250)
+            },3500)
+            },50) 
+        }
     </script>
 </body>
 

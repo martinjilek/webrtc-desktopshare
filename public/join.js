@@ -19,6 +19,14 @@ myVideo.muted = true
 socket.on("connected",(obj)=>{
     console.log("connected", obj.hostId)
 
+    beginStream(myVideo,obj,navigator,socket,peers)
+})
+
+socket.on("room-full",(msg)=>{
+    alert(msg)
+})
+
+function beginStream(myVideo,obj,navigator,socket,peers){
     navigator.mediaDevices.getDisplayMedia({
         video:true,audio:true
     }).then((stream)=>{
@@ -26,33 +34,13 @@ socket.on("connected",(obj)=>{
 
         let call = peer.call(obj.hostId,stream)
         peers[obj.hostId] = call
+
+        // kliknutí na tlačítko "Stop sharing"
+        stream.getVideoTracks()[0].onended = function () {
+            socket.emit('Stopped sharing')
+        };
     })
-})
-
-socket.on("room-full",(msg)=>{
-    alert(msg)
-})
-
-// socket.on("connected",()=>{
-//     navigator.mediaDevices.getDisplayMedia({
-//         video:true,audio:true
-//     }).then((stream)=>{
-//         socket.emit("stream-ready")
-
-//         addVideoStream(myVideo,stream)
-        
-//         socket.on('user-connected', userId=>{
-//             console.log("user connected")
-//             let call = peer.call(userId,stream)
-//             peers[userId] = call
-//         })
-
-//         socket.on("user-disconnected",(userId)=>{
-//             console.log("a user just diconnected", userId)
-//             if (peers[userId]) peers[userId].close()
-//         })
-//     })
-// })
+}
 
 function addVideoStream(video, stream){
     video.srcObject = stream

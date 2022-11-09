@@ -29,7 +29,7 @@ app.get("/host/:id",(req,res)=>{
         res.send("This room already exists")
         return
     }
-    res.render("host",{id:req.params.id});   
+    res.render("host",{id:req.params.id,domain: req.get('host')});   
 })
 
 // tabulka s místonosti pro připojení
@@ -49,11 +49,10 @@ app.get("/join/:roomId",(req,res)=>{
 io.on("connection",socket=>{
     // Přijímá
     socket.on("create-room",(roomId, userId)=>{
-        
-        let room =  new Room(roomId,userId,socket.id,null)
+        let room =  new Room(roomId,userId,socket,null)
         rooms.push(room)
         socket.join(roomId)
-
+        room.setServerSocket(socket)
         socket.emit("password",room.pw)
 
         socket.on('disconnect', function () {
@@ -70,7 +69,7 @@ io.on("connection",socket=>{
     })
     // vysílá
     socket.on("join-room",(params)=>{
-        let room
+        let room 
         rooms.forEach(e=>{
             if(e.pw==params.pw && e.id==params.roomId){
                 room=e
@@ -84,17 +83,24 @@ io.on("connection",socket=>{
             return
         }
         if(room.client != undefined){
-            socket.emit("room-full","V této místnosti již někdo vysílá.")
+            room.clientSocket.disconnect()
+            //socket.emit("room-full","V této místnosti již někdo vysílá.")
             return
         }
         room.client = params.peerId
+        room.setClientSocket(socket) 
         socket.join(params.roomId)
-        console.log(room)
         socket.emit("connected",{hostId:room.server})
+
+        socket.on("Stopped sharing",(e)=>{
+            console.log(room.serverSocket.id)
+            io.to(room.serverSocket.id).emit('stopped sharing')
+        })
         
         socket.on("disconnect",(e)=>{
             io.in(room.id).emit('user-disconnected',"user has disconnected")
             room.client = undefined
+            room.setClientSocket = undefined
         })
     })
 
@@ -108,12 +114,24 @@ server.listen(3500,()=>{
 
 class Room{
     
-    constructor(id,server,serverSocketId, client, pw=randomstring.generate(4).toUpperCase()){
+    constructor(id,server,serverSocket, client, pw=randomstring.generate(4).toUpperCase()){
         this.id = id;
+        // peerIds
         this.server = server;
         this.client= client;
+        //socketIds
+        this.serverSocket
+        this.clientSocket = null;
         this.pw = pw;
-        this.serverSocketId = serverSocketId;
+        this.serverSocket = serverSocket;
+    }
+
+    setClientSocket(clientSocket){
+        this.clientSocket = clientSocket
+    }
+
+    setServerSocket(serverSocket){
+        this.serverSocket = serverSocket
     }
 
     regeneratePw(){

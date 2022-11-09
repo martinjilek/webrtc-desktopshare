@@ -14,7 +14,7 @@ const myVideo = document.createElement("video")
 myVideo.muted = true
 
 socket.on("password",(pw)=>{
-    document.querySelector(".pw").value=pw
+    document.querySelector(".pw").innerHTML=pw
 })
 
 socket.on("test",(msg)=>{console.log(msg)})
@@ -23,16 +23,19 @@ peer.on("call",(call)=>{
     console.log("connected")
     call.answer()
     call.on('stream', userVideoStream => {
+        document.querySelector(".message").style.display = "none"
         addVideoStream(myVideo, userVideoStream)
     })
 })
 
 socket.on("user-disconnected",(a)=>{
     document.querySelector(".video-container").innerHTML=""
+    document.querySelector(".message").style.display = "block"
 })
 
-
-
+socket.on("stopped sharing",(a)=>{
+    document.querySelector("video").remove()
+})
 
 
 document.querySelector("#regeneratePw").addEventListener("click",()=>{
