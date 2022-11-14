@@ -5,6 +5,7 @@ let peer = new Peer(undefined, {
     host:'/',
     port:'3001'
 })
+//TODO https://stackoverflow.com/questions/35252249/move-drag-pan-and-zoom-object-image-or-div-in-pure-js
 
 peer.on('open', peerId=>{
     socket.emit("create-room", ROOM_ID, peerId)

@@ -69,28 +69,25 @@ io.on("connection",socket=>{
     })
     // vysílá
     socket.on("join-room",(params)=>{
-        let room 
-        rooms.forEach(e=>{
-            if(e.pw==params.pw && e.id==params.roomId){
-                room=e
-                return
+        let room, msg
+        for(const r of rooms){
+            if(r.id==params.roomId){
+                if(r.pw!=params.pw){
+                    msg = "Wrong password"
+                    break
+                }
+                room=r
+                break
             }
-        })
-
-        if(room==undefined){
-            console.log("místnost nenalezena")
-            //TODO handle response 
+        }
+        
+        if(msg!=undefined){
+            io.to(socket.id).emit("join-error",msg)
+            return
+        }else if(room==undefined){
+            io.to(socket.id).emit("join-error",'Room not found')
             return
         }
-        if(room.client != undefined){
-            room.clientSocket.disconnect()
-            //socket.emit("room-full","V této místnosti již někdo vysílá.")
-            return
-        }
-        room.client = params.peerId
-        room.setClientSocket(socket) 
-        socket.join(params.roomId)
-        socket.emit("connected",{hostId:room.server})
 
         socket.on("Stopped sharing",(e)=>{
             console.log(room.serverSocket.id)
@@ -100,8 +97,27 @@ io.on("connection",socket=>{
         socket.on("disconnect",(e)=>{
             io.in(room.id).emit('user-disconnected',"user has disconnected")
             room.client = undefined
-            room.setClientSocket = undefined
+            room.setClientSocket(undefined)
         })
+
+        if(room.client != undefined){
+            // kick old client on connect
+            io.to(room.clientSocket.id).emit("force-disconnect")
+            console.log("forcing disconnect")
+            room.clientSocket.disconnect()
+            room.setClientSocket(socket)
+            room.client = params.peerId
+            socket.join(params.roomId)
+            socket.emit("connected",{hostId:room.server})
+            //socket.emit("room-full","V této místnosti již někdo vysílá.")
+            return
+        }
+
+        room.client = params.peerId
+        room.setClientSocket(socket) 
+        socket.join(params.roomId)
+        socket.emit("connected",{hostId:room.server})
+
     })
 
 })
