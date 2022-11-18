@@ -40,7 +40,6 @@ socket.on("stopped sharing",(a)=>{
 
 
 document.querySelector("#regeneratePw").addEventListener("click",()=>{
-    console.log("regenPW")
     socket.emit("regeneratePw")
 })
 
@@ -50,4 +49,5 @@ function addVideoStream(video, stream){
         video.play()
     })
     document.querySelector(".video-container").append(video)
+    initZoomPan()
 }

@@ -1,6 +1,5 @@
 console.log("ROOM_ID= ",roomId)
 const socket = io(`/`)
-//let pw = window.prompt("Zadejte heslo").toUpperCase();
 let peers = {}, mediaStream, peerId
 
 let peer = new Peer(undefined, {

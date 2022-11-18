@@ -90,7 +90,6 @@ io.on("connection",socket=>{
         }
 
         socket.on("Stopped sharing",(e)=>{
-            console.log(room.serverSocket.id)
             io.to(room.serverSocket.id).emit('stopped sharing')
         })
         
@@ -103,7 +102,6 @@ io.on("connection",socket=>{
         if(room.client != undefined){
             // kick old client on connect
             io.to(room.clientSocket.id).emit("force-disconnect")
-            console.log("forcing disconnect")
             room.clientSocket.disconnect()
             room.setClientSocket(socket)
             room.client = params.peerId
